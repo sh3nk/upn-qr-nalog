@@ -3,6 +3,11 @@
 	$orderData = $order->get_data();
 	$billing = $orderData['billing'];
 	
+	// Only show UPNQR for BACS payment method
+	if ($orderData['payment_method'] != 'bacs') {
+	    return;
+    }
+	
 	// Data for form
 	$data = array(
 		'placnik' => array(
@@ -30,7 +35,36 @@
 		return;
 	}
 	
-	// Data for QR code
+	// Field character limit checks
+    if (mb_strlen($data['placnik']['ime']) > 33) {
+	    $data['placnik']['ime'] = mb_substr($data['placnik']['ime'], 0, 33);
+    }
+    if (mb_strlen($data['placnik']['ulica']) > 33) {
+        $data['placnik']['ulica'] = mb_substr($data['placnik']['ulica'], 0, 33);
+    }
+    if (mb_strlen($data['placnik']['kraj']) > 33) {
+        $data['placnik']['kraj'] = mb_substr($data['placnik']['kraj'], 0, 33);
+    }
+    if ($orderData['total'] > 1000000000 - 1) {
+	    $data['znesek'] = 1000000000 - 1;
+    }
+    if (mb_strlen($data['namen_placila']) > 42) {
+        $data['namen_placila'] = mb_substr($data['namen_placila'], 0, 42);
+    }
+    if (mb_strlen($data['referenca_prejemnika']['sklic']) > 22) {
+        $data['referenca_prejemnika']['sklic'] = mb_substr($data['referenca_prejemnika']['sklic'], 0, 22);
+    }
+    if (mb_strlen($data['prejemnik']['ime']) > 33) {
+        $data['prejemnik']['ime'] = mb_substr($data['prejemnik']['ime'], 0, 33);
+    }
+    if (mb_strlen($data['prejemnik']['ulica']) > 33) {
+        $data['prejemnik']['ulica'] = mb_substr($data['prejemnik']['ulica'], 0, 33);
+    }
+    if (mb_strlen($data['prejemnik']['kraj']) > 33) {
+        $data['prejemnik']['kraj'] = mb_substr($data['prejemnik']['kraj'], 0, 33);
+    }
+
+    // Data for QR code
 	$qrData = array(
 		'vodilni_slog' => "UPNQR\n",
 		'iban_placnika' => "\n",
@@ -101,46 +135,46 @@
 		</p>
 		
 		<!--	placnik	    -->
-		<p class="uq-data uq-data-poloznica" style="top: 84px; left: 394px;">
+		<p class="uq-data uq-data-poloznica" style="top: 86px; left: 392px;">
 			<?php echo $data['placnik']['ime']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 102px; left: 394px;">
+		<p class="uq-data uq-data-poloznica" style="top: 104px; left: 392px;">
 			<?php echo $data['placnik']['ulica']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 120px; left: 394px;">
+		<p class="uq-data uq-data-poloznica" style="top: 122px; left: 392px;">
 			<?php echo $data['placnik']['kraj']; ?>
 		</p>
 		
 		<p class="uq-data uq-data-poloznica" style="top: 151px; left: 421px;">
 			<?php echo $data['znesek']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 183px; left: 237px;">
+		<p class="uq-data uq-data-poloznica" style="top: 183px; left: 235px;">
 			<?php echo $data['koda_namena']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 183px; left: 300px;">
+		<p class="uq-data uq-data-poloznica" style="top: 183px; left: 298px;">
 			<?php echo $data['namen_placila']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 183px; left: 650px;">
+		<p class="uq-data uq-data-poloznica" style="top: 183px; left: 648px;">
 			<?php echo $data['rok_placila']; ?>
 		</p>
 		
 		<!--	prejemnik	-->
-		<p class="uq-data uq-data-poloznica" style="top: 216px; left: 237px;">
+		<p class="uq-data uq-data-poloznica" style="top: 216px; left: 235px;">
 			<?php echo $data['iban_prejemnika']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 245px; left: 237px;">
+		<p class="uq-data uq-data-poloznica" style="top: 245px; left: 235px;">
 			<?php echo $data['referenca_prejemnika']['model']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 245px; left: 300px;">
+		<p class="uq-data uq-data-poloznica" style="top: 245px; left: 298px;">
 			<?php echo $data['referenca_prejemnika']['sklic']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 274px; left: 237px;">
+		<p class="uq-data uq-data-poloznica" style="top: 276px; left: 235px;">
 			<?php echo $data['prejemnik']['ime']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 292px; left: 237px;">
+		<p class="uq-data uq-data-poloznica" style="top: 294px; left: 235px;">
 			<?php echo $data['prejemnik']['ulica']; ?>
 		</p>
-		<p class="uq-data uq-data-poloznica" style="top: 310px; left: 237px;">
+		<p class="uq-data uq-data-poloznica" style="top: 312px; left: 235px;">
 			<?php echo $data['prejemnik']['kraj']; ?>
 		</p>
 

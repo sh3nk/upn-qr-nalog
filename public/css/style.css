@@ -1,0 +1,30 @@
+#uq-background {
+    background: url('../upn.png');
+    background-size: contain;
+    width: 768px;
+    height: 362px;
+    position: relative;
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+}
+
+.uq-data {
+    position: absolute;
+    margin: 0;
+    line-height: 1;
+}
+
+.uq-data-potrdilo {
+    left: 20px;
+    font-size: 11px;
+}
+
+.uq-data-poloznica {
+    font-size: 13px;
+}
+
+#uq-qrcode {
+    position: absolute;
+    top: 26px;
+    left: 237px;
+}

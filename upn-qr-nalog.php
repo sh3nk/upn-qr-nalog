@@ -17,9 +17,6 @@ if (!defined('ABSPATH')) {
     die;
 }
 
-define('UQ__PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('UQ__PLUGIN_URL', plugin_dir_url(__FILE__));
-
 class UpnQrNalog {
 	static $instance = false;
 
@@ -39,7 +36,8 @@ class UpnQrNalog {
 
 	public function scripts() {
 		if (is_order_received_page()) {
-			wp_enqueue_style('uq-nalog-css', plugins_url('public/css/style.css', __FILE__));
+			wp_enqueue_style('uq-nalog', plugins_url('public/css/style.css', __FILE__));
+			wp_enqueue_style('uq-nalog-print', plugins_url('public/css/style-print.css', __FILE__), array(), false, 'print');
 			wp_enqueue_script('qr-library', plugins_url('lib/qrcodegen.js', __FILE__), array(), false, true);
 			wp_enqueue_script('qr-script', plugins_url('inc/generate-qr.js', __FILE__), array('jquery', 'qr-library'), false, true);
 		}

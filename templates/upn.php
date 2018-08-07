@@ -108,6 +108,7 @@
 
 <div id="uq-nalog">
 	<h2>UPN QR</h2>
+    <p id="uq-print"><a href="javascript:window.print()">Natisni</a></p>
  
 	<div id="uq-background">
 		<!--	potrdilo	-->

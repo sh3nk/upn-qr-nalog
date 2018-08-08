@@ -16,13 +16,13 @@
 			'kraj' => $billing['postcode'] . ' ' . $billing['city']
 		),
 		'znesek' => '***' . number_format($orderData['total'], 2, ',', '.'),
-		'koda_namena' => 'GDSV',
-		'namen_placila' => 'Plačilo računa št. ' . $order->get_id(),
+		'koda_namena' => strtoupper(substr(get_option('uq_koda'), 0, 4)),
+		'namen_placila' => str_replace('%id%', $order->get_id(), get_option('uq_namen')),
 		'rok_placila' => '',//date('d.m.Y', time() + (7*24*3600)),
 		'iban_prejemnika' => get_option('uq_iban'),
 		'referenca_prejemnika' => array(
-			'model' => 'SI00',
-			'sklic' => $order->get_id()
+			'model' => substr(get_option('uq_model'), 0, 4),
+			'sklic' => str_replace('%id%', $order->get_id(), get_option('uq_sklic'))
 		),
 		'prejemnik' => array(
 			'ime' => get_option('uq_ime'),

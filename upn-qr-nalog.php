@@ -119,6 +119,38 @@ class UpnQrNalog {
 			'uqoptions',
 			'uqoptions_section'
 		);
+		register_setting('uqoptions', 'uq_namen');
+		add_settings_field(
+			'uq_namen',
+			'Namen plačila',
+			array($this, 'settingsNamen'),
+			'uqoptions',
+			'uqoptions_section'
+		);
+		register_setting('uqoptions', 'uq_koda');
+		add_settings_field(
+			'uq_koda',
+			'Koda namena',
+			array($this, 'settingsKoda'),
+			'uqoptions',
+			'uqoptions_section'
+		);
+		register_setting('uqoptions', 'uq_model');
+		add_settings_field(
+			'uq_model',
+			'Model reference',
+			array($this, 'settingsModel'),
+			'uqoptions',
+			'uqoptions_section'
+		);
+		register_setting('uqoptions', 'uq_sklic');
+		add_settings_field(
+			'uq_sklic',
+			'Sklic reference',
+			array($this, 'settingsSklic'),
+			'uqoptions',
+			'uqoptions_section'
+		);
 	}
 	
 	public function settingsSectionCb() {}
@@ -131,16 +163,43 @@ class UpnQrNalog {
 	public function settingsIme() {
 		$value = esc_attr(get_option('uq_ime'));
 		echo '<input type="text" class="regular-text" id="uq_ime" name="uq_ime" value="' . $value . '">';
+		echo '<p class="description">Največ 33 znakov.</p>';
 	}
 	
 	public function settingsUlica() {
 		$value = esc_attr(get_option('uq_ulica'));
 		echo '<input type="text" class="regular-text" id="uq_ulica" name="uq_ulica" value="' . $value . '">';
+		echo '<p class="description">Največ 33 znakov.</p>';
 	}
 	
 	public function settingsKraj() {
 		$value = esc_attr(get_option('uq_kraj'));
 		echo '<input type="text" class="regular-text" id="uq_kraj" name="uq_kraj" value="' . $value . '">';
+		echo '<p class="description">Največ 33 znakov.</p>';
+	}
+	
+	public function settingsNamen() {
+		$value = esc_attr(get_option('uq_namen'));
+		echo '<input type="text" class="regular-text" id="uq_namen" name="uq_namen" value="' . $value . '">';
+		echo '<p class="description">Vstavi %id% za izpis IDja naročila. Največ 42 znakov.</p>';
+	}
+	
+	public function settingsKoda() {
+		$value = esc_attr(get_option('uq_koda'));
+		echo '<input type="text" class="regular-text" id="uq_koda" name="uq_koda" value="' . $value . '">';
+		echo '<p class="description">4 črke.</p>';
+	}
+	
+	public function settingsModel() {
+		$value = esc_attr(get_option('uq_model'));
+		echo '<input type="text" class="regular-text" id="uq_model" name="uq_model" value="' . $value . '">';
+		echo '<p class="description">4 znaki.</p>';
+	}
+	
+	public function settingsSklic() {
+		$value = esc_attr(get_option('uq_sklic'));
+		echo '<input type="text" class="regular-text" id="uq_sklic" name="uq_sklic" value="' . $value . '">';
+		echo '<p class="description">Vstavi %id% za izpis IDja naročila. Največ 22 znakov.</p>';
 	}
 }
 

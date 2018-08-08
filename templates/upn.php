@@ -107,8 +107,12 @@
 ?>
 
 <div id="uq-nalog">
-	<h2>UPN QR</h2>
-    <p>Skenirajte QR kodo za uporabo v spletni banki ali prepišite podatke na UPN nalog.</p>
+	<h2>UPN QR za mobilno banko</h2>
+
+    <canvas id="uq-qrcode-big"></canvas>
+    
+    <h2>UPN Nalog</h2>
+    <p>Podatke lahko prepišete na UPN nalog.</p>
  
 	<div id="uq-background">
         <img id="uq-bg-image" src="<?php echo UQ__PLUGIN_URL; ?>public/upn.png" alt="">

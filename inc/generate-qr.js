@@ -1,5 +1,6 @@
 (function($) {
     var canvas = $('canvas#uq-qrcode')[0];
+    var canvasBig = $('canvas#uq-qrcode-big')[0];
 
     var ECL = qrcodegen.QrCode.Ecc.MEDIUM;
     var version = 15;
@@ -18,6 +19,7 @@
 
     // drawCanvas(scale, border, canvasElement)
     qr.drawCanvas(1.6, 4, canvas);
+    qr.drawCanvas(4, 4, canvasBig);
 
 
     // Convert object (from PHP) to array

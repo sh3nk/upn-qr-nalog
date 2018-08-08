@@ -5,7 +5,8 @@ a.scroll_to_top,
 .woocommerce-thankyou-order-received,
 ul.woocommerce-thankyou-order-details,
 section.woocommerce-bacs-bank-details,
-#uq-print {
+#uq-print,
+section.woocommerce-customer-details {
     display: none !important;
 }
 

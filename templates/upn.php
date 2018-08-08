@@ -18,7 +18,7 @@
 		'znesek' => '***' . number_format($orderData['total'], 2, ',', '.'),
 		'koda_namena' => 'GDSV',
 		'namen_placila' => 'Plačilo računa št. ' . $order->get_id(),
-		'rok_placila' => date('d.m.Y', time() + (7*24*3600)),
+		'rok_placila' => '',//date('d.m.Y', time() + (7*24*3600)),
 		'iban_prejemnika' => get_option('uq_iban'),
 		'referenca_prejemnika' => array(
 			'model' => 'SI00',
@@ -108,9 +108,11 @@
 
 <div id="uq-nalog">
 	<h2>UPN QR</h2>
-    <p id="uq-print"><a href="javascript:window.print()">Natisni</a></p>
+    <p>Skenirajte QR kodo za uporabo v spletni banki ali prepišite podatke na UPN nalog.</p>
  
 	<div id="uq-background">
+        <img id="uq-bg-image" src="<?php echo UQ__PLUGIN_URL; ?>public/upn.png" alt="">
+        
 		<!--	potrdilo	-->
 		<p class="uq-data uq-data-potrdilo" style="top: 26px;">
 			<?php echo $data['placnik']['ime']; ?><br>

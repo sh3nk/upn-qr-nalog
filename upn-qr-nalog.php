@@ -17,6 +17,8 @@ if (!defined('ABSPATH')) {
     die;
 }
 
+define('UQ__PLUGIN_URL', plugin_dir_url(__FILE__));
+
 class UpnQrNalog {
 	static $instance = false;
 

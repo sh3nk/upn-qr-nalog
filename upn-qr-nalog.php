@@ -7,7 +7,7 @@
 Plugin Name: UPN QR Nalog
 Plugin URI: http://senk.eu/
 Description: Izpis UPN QR naloga za placevanje woocommerce storitev.
-Version: 0.1
+Version: 0.2
 Author: shenk
 Author URI: http://senk.eu/
 Text Domain: upn-qr
@@ -33,13 +33,13 @@ class UpnQrNalog {
 		add_action('admin_init', array($this, 'settings'));
 		add_action('admin_menu', array($this, 'submenu'));
 		add_action('wp_enqueue_scripts', array($this, 'scripts'), 15);
-		add_action('woocommerce_thankyou', array($this, 'output'), 15);
+    add_action('woocommerce_thankyou', array($this, 'output'), 10);
+    add_filter('woocommerce_bacs_account_fields', array($this, 'bacs_fields'), 10, 2);
 	}
 
 	public function scripts() {
 		if (is_order_received_page()) {
 			wp_enqueue_style('uq-nalog', plugins_url('public/css/style.css', __FILE__));
-			wp_enqueue_style('uq-nalog-print', plugins_url('public/css/style-print.css', __FILE__), array(), false, 'print');
 			wp_enqueue_script('qr-library', plugins_url('lib/qrcodegen.js', __FILE__), array(), false, true);
 			wp_enqueue_script('qr-script', plugins_url('inc/generate-qr.js', __FILE__), array('jquery', 'qr-library'), false, true);
 		}
@@ -47,7 +47,28 @@ class UpnQrNalog {
 	
 	public function output($orderId) {
 		include dirname(__FILE__) . '/templates/upn.php';
-	}
+  }
+  
+  public function bacs_fields($account_fields, $order_id) {
+    // $account_fields['sort_code']['value'] = 'SI00 ' . $order_id;
+
+    $account_fields['reference'] = array(
+      'label' => __('Referenca', 'upn-qr'),
+      'value' => esc_attr(get_option('uq_model')) . ' ' . str_replace('%id%', $order_id, esc_attr(get_option('uq_sklic')))
+    );
+    
+    $account_fields['purpose'] = array(
+      'label' => __('Namen plačila', 'upn-qr'),
+      'value' => str_replace('%id%', $order_id, esc_attr(get_option('uq_namen')))
+    );
+    
+    $account_fields['purpose_code'] = array(
+      'label' => __('Koda namena', 'upn-rq'),
+      'value' => esc_attr(get_option('uq_koda'))
+    );
+    
+    return $account_fields;
+  }
 	
 	public function submenu() {
 		add_submenu_page(

@@ -1,28 +1,56 @@
+#uq-nalog {
+  overflow-x: auto;
+}
+
+#uq-qrcode-big {
+  max-width: 100%;
+}
+
 #uq-background {
-    width: 768px;
-    height: 362px;
-    position: relative;
-    font-family: "Courier New", Courier, monospace;
-    font-weight: bold;
+  width: 768px;
+  height: 362px;
+  position: relative;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
 }
 
 .uq-data {
-    position: absolute;
-    margin: 0;
-    line-height: 1;
+  position: absolute;
+  margin: 0;
+  line-height: 1;
 }
 
 .uq-data-potrdilo {
-    left: 17px;
-    font-size: 11px;
+  left: 17px;
+  font-size: 11px;
 }
 
 .uq-data-poloznica {
-    font-size: 13px;
+  font-size: 13px;
 }
 
 #uq-qrcode {
-    position: absolute;
-    top: 26px;
-    left: 237px;
+  position: absolute;
+  top: 26px;
+  left: 237px;
+}
+
+@media (max-width: 768px) {
+  #uq-nalog::after {
+    content: '';
+    display: block;
+    width: 362px;
+    height: 406px; /* 768px - 362px */
+  }
+
+  #uq-background {
+    transform: rotate(90deg) translateY(-100%);
+    transform-origin: 0 0;
+  }
+}
+
+@media print {
+  #uq-nalog {
+    overflow: hidden;
+  }
 }

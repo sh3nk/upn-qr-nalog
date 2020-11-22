@@ -115,7 +115,7 @@
     <p>Podatke lahko prepišete na UPN nalog.</p>
  
 	<div id="uq-background">
-        <img id="uq-bg-image" src="<?php echo UQ__PLUGIN_URL; ?>public/upn.png" alt="">
+    <img id="uq-bg-image" src="<?php echo UQ__PLUGIN_URL; ?>public/upn.png" alt="">
         
 		<!--	potrdilo	-->
 		<p class="uq-data uq-data-potrdilo" style="top: 26px;">
@@ -124,8 +124,11 @@
 			<?php echo $data['placnik']['kraj']; ?>
 		</p>
 		<p class="uq-data uq-data-potrdilo" style="top: 87px;">
-			<?php echo $data['namen_placila'] . ','; ?><br>
-			<?php echo $data['rok_placila']; ?>
+      <?php echo $data['namen_placila']; ?>
+      <?php if ($data['rok_placila']): ?>
+        ,<br>
+        <?php echo $data['rok_placila']; ?>
+      <?php endif; ?>
 		</p>
 		<p class="uq-data uq-data-potrdilo" style="top: 129px; left: 64px;">
 			<?php echo $data['znesek']; ?>

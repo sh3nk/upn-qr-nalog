@@ -7,7 +7,7 @@
 Plugin Name: UPN QR Nalog
 Plugin URI: http://senk.eu/
 Description: Izpis UPN QR naloga za placevanje woocommerce storitev.
-Version: 0.2
+Version: 0.3
 Author: shenk
 Author URI: http://senk.eu/
 Text Domain: upn-qr
@@ -33,7 +33,11 @@ class UpnQrNalog {
 		add_action('admin_init', array($this, 'settings'));
 		add_action('admin_menu', array($this, 'submenu'));
 		add_action('wp_enqueue_scripts', array($this, 'scripts'), 15);
-    add_action('woocommerce_thankyou', array($this, 'output'), 10);
+    add_action(
+      get_option('uq_hook', 'woocommerce_thankyou'),
+      array($this, 'output'),
+      get_option('uq_position', 10)
+    );
     add_filter('woocommerce_bacs_account_fields', array($this, 'bacs_fields'), 10, 2);
 	}
 
@@ -171,6 +175,22 @@ class UpnQrNalog {
 			array($this, 'settingsSklic'),
 			'uqoptions',
 			'uqoptions_section'
+    );
+    register_setting('uqoptions', 'uq_hook');
+		add_settings_field(
+			'uq_hook',
+			'Napredno: Akcijska kljuka',
+			array($this, 'settingsHook'),
+			'uqoptions',
+			'uqoptions_section'
+		);
+    register_setting('uqoptions', 'uq_position');
+		add_settings_field(
+			'uq_position',
+			'Napredno: Zaporedje prikaza',
+			array($this, 'settingsPosition'),
+			'uqoptions',
+			'uqoptions_section'
 		);
 	}
 	
@@ -221,6 +241,18 @@ class UpnQrNalog {
 		$value = esc_attr(get_option('uq_sklic'));
 		echo '<input type="text" class="regular-text" id="uq_sklic" name="uq_sklic" value="' . $value . '">';
 		echo '<p class="description">Vstavi %id% za izpis IDja naročila. Največ 22 znakov.</p>';
+  }
+
+  public function settingsHook() {
+		$value = esc_attr(get_option('uq_hook'));
+		echo '<input type="text" class="regular-text" id="uq_hook" name="uq_hook" value="' . $value . '">';
+		echo '<p class="description">Izberi kje naj se na potrditveni strani pokažeta QR in položnica. Default: "woocommerce_thankyou"</p>';
+	}
+  
+  public function settingsPosition() {
+		$value = esc_attr(get_option('uq_position'));
+		echo '<input type="number" min="0" class="regular-text" id="uq_position" name="uq_position" value="' . $value . '">';
+		echo '<p class="description">Izberi kje naj se na potrditveni strani pokažeta QR in položnica. Default: 10</p>';
 	}
 }
 

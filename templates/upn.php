@@ -1,70 +1,88 @@
 <?php
-	$order = wc_get_order($orderId);
-	$orderData = $order->get_data();
-	$billing = $orderData['billing'];
-	
-	// Only show UPNQR for BACS payment method
-	if ($orderData['payment_method'] != 'bacs') {
-	    return;
-    }
-	
-	// Data for form
-	$data = array(
-		'placnik' => array(
-			'ime' => $billing['first_name'] . ' ' . $billing['last_name'],
-			'ulica' => ($billing['address_2']) ? $billing['address_1'] . ', ' . $billing['address_2'] : $billing['address_1'],
-			'kraj' => $billing['postcode'] . ' ' . $billing['city']
-		),
-		'znesek' => '***' . number_format($orderData['total'], 2, ',', '.'),
-		'koda_namena' => strtoupper(substr(get_option('uq_koda'), 0, 4)),
-		'namen_placila' => str_replace('%id%', $order->get_id(), get_option('uq_namen')),
-		'rok_placila' => '',//date('d.m.Y', time() + (7*24*3600)),
-		'iban_prejemnika' => get_option('uq_iban'),
-		'referenca_prejemnika' => array(
-			'model' => substr(get_option('uq_model'), 0, 4),
-			'sklic' => str_replace('%id%', $order->get_id(), get_option('uq_sklic'))
-		),
-		'prejemnik' => array(
-			'ime' => get_option('uq_ime'),
-			'ulica' => get_option('uq_ulica'),
-			'kraj' => get_option('uq_kraj')
-		)
-	);
-	
-	if (!$data['iban_prejemnika'] || !$data['prejemnik']['ime'] || !$data['prejemnik']['ulica'] || !$data['prejemnik']['kraj']) {
-		return;
-	}
-	
-	// Field character limit checks
-    if (mb_strlen($data['placnik']['ime']) > 33) {
-	    $data['placnik']['ime'] = mb_substr($data['placnik']['ime'], 0, 33);
-    }
-    if (mb_strlen($data['placnik']['ulica']) > 33) {
-        $data['placnik']['ulica'] = mb_substr($data['placnik']['ulica'], 0, 33);
-    }
-    if (mb_strlen($data['placnik']['kraj']) > 33) {
-        $data['placnik']['kraj'] = mb_substr($data['placnik']['kraj'], 0, 33);
-    }
-    if ($orderData['total'] > 1000000000 - 1) {
-	    $data['znesek'] = 1000000000 - 1;
-    }
-    if (mb_strlen($data['namen_placila']) > 42) {
-        $data['namen_placila'] = mb_substr($data['namen_placila'], 0, 42);
-    }
-    if (mb_strlen($data['referenca_prejemnika']['sklic']) > 22) {
-        $data['referenca_prejemnika']['sklic'] = mb_substr($data['referenca_prejemnika']['sklic'], 0, 22);
-    }
-    if (mb_strlen($data['prejemnik']['ime']) > 33) {
-        $data['prejemnik']['ime'] = mb_substr($data['prejemnik']['ime'], 0, 33);
-    }
-    if (mb_strlen($data['prejemnik']['ulica']) > 33) {
-        $data['prejemnik']['ulica'] = mb_substr($data['prejemnik']['ulica'], 0, 33);
-    }
-    if (mb_strlen($data['prejemnik']['kraj']) > 33) {
-        $data['prejemnik']['kraj'] = mb_substr($data['prejemnik']['kraj'], 0, 33);
-    }
+  use QrCodeGenPhp\QrCode;
+  use QrCodeGenPhp\QrSegment;
+  use QrCodeGenPhp\ECC;
 
-    // Data for QR code
+  /**
+   * Get options from plugin custom fields and display UPNQR form.
+   * 
+   * Some variables are from wrapping code (eg. upn-qr-nalog.php: UpnQrNalog.output()):
+   *    $orderId - ID of order that upnqr is being displayed for
+   *  	$isQrPhp - Generate QR code with PHP lib instead of JS lib (js works only if page is actually rendered in browser)
+   *    $hideBigQr - Do not display big (mobile) qr section
+   *    $hideTitles - Hide <h2> titles
+   */
+
+  $order = wc_get_order($orderId);
+  $orderData = $order->get_data();
+  $billing = $orderData['billing'];
+  
+  // Only show UPNQR for BACS payment method
+  if ($orderData['payment_method'] != 'bacs') {
+    return;
+  }
+
+  if ($isQrPhp) {
+    include_once __DIR__ . '/../lib/qrcodegen.php';
+  }
+  
+  // Prepare data for form
+  $data = array(
+    'placnik' => array(
+      'ime' => $billing['first_name'] . ' ' . $billing['last_name'],
+      'ulica' => ($billing['address_2']) ? $billing['address_1'] . ', ' . $billing['address_2'] : $billing['address_1'],
+      'kraj' => $billing['postcode'] . ' ' . $billing['city']
+    ),
+    'znesek' => '***' . number_format($orderData['total'], 2, ',', '.'),
+    'koda_namena' => strtoupper(substr(get_option('uq_koda'), 0, 4)),
+    'namen_placila' => str_replace('%id%', $order->get_id(), get_option('uq_namen')),
+    'rok_placila' => '', // date('d.m.Y', time() + (7*24*3600)),
+    'iban_prejemnika' => get_option('uq_iban'),
+    'referenca_prejemnika' => array(
+      'model' => substr(get_option('uq_model'), 0, 4),
+      'sklic' => str_replace('%id%', $order->get_id(), get_option('uq_sklic'))
+    ),
+    'prejemnik' => array(
+      'ime' => get_option('uq_ime'),
+      'ulica' => get_option('uq_ulica'),
+      'kraj' => get_option('uq_kraj')
+    )
+  );
+  
+  if (!$data['iban_prejemnika'] || !$data['prejemnik']['ime'] || !$data['prejemnik']['ulica'] || !$data['prejemnik']['kraj']) {
+    return;
+  }
+  
+  // Field character limit checks
+  if (mb_strlen($data['placnik']['ime']) > 33) {
+    $data['placnik']['ime'] = mb_substr($data['placnik']['ime'], 0, 33);
+  }
+  if (mb_strlen($data['placnik']['ulica']) > 33) {
+    $data['placnik']['ulica'] = mb_substr($data['placnik']['ulica'], 0, 33);
+  }
+  if (mb_strlen($data['placnik']['kraj']) > 33) {
+    $data['placnik']['kraj'] = mb_substr($data['placnik']['kraj'], 0, 33);
+  }
+  if ($orderData['total'] > 1000000000 - 1) {
+    $data['znesek'] = 1000000000 - 1;
+  }
+  if (mb_strlen($data['namen_placila']) > 42) {
+    $data['namen_placila'] = mb_substr($data['namen_placila'], 0, 42);
+  }
+  if (mb_strlen($data['referenca_prejemnika']['sklic']) > 22) {
+    $data['referenca_prejemnika']['sklic'] = mb_substr($data['referenca_prejemnika']['sklic'], 0, 22);
+  }
+  if (mb_strlen($data['prejemnik']['ime']) > 33) {
+    $data['prejemnik']['ime'] = mb_substr($data['prejemnik']['ime'], 0, 33);
+  }
+  if (mb_strlen($data['prejemnik']['ulica']) > 33) {
+    $data['prejemnik']['ulica'] = mb_substr($data['prejemnik']['ulica'], 0, 33);
+  }
+  if (mb_strlen($data['prejemnik']['kraj']) > 33) {
+    $data['prejemnik']['kraj'] = mb_substr($data['prejemnik']['kraj'], 0, 33);
+  }
+
+  // Data for QR code
 	$qrData = array(
 		'vodilni_slog' => "UPNQR\n",
 		'iban_placnika' => "\n",
@@ -97,23 +115,62 @@
 	$qrString = implode('', $qrData);
 	
 	// Convert data to ISO 8859-2 charset
-    $qrString = iconv('UTF-8', 'ISO-8859-2', $qrString);
+  $qrString = iconv('UTF-8', 'ISO-8859-2', $qrString);
     
-    // Get byte array of all characters
-    $qrString = unpack('C*', $qrString);
-	
+  // Get byte array of all characters
+  $qrString = unpack('C*', $qrString);
+
+  $qrJson = '';
+  $qrSvgMarkup = '';
+
+  if ($isQrPhp) {
+    // Generate QR with php
+    if (
+      class_exists(QrSegment::class) &&
+      class_exists(QrCode::class) &&
+      class_exists(ECC::class)
+    ) {
+      $eci = QrSegment::makeEci(4);
+      $segs = QrSegment::makeBytes($qrString);
+
+      $finalQr = QrCode::encodeSegments(
+        array($eci, $segs),
+        new ECC(ECC::MEDIUM),
+        15, // min qr version
+        15, // max qr version
+        -1, // mask auto
+        false // boost ecc
+      );
+
+      $qrSvgMarkup = $finalQr->toSvgString(4);
+    }
+  } else {
     // Convert to json to use in generate-qr.js
-	$qrString = json_encode($qrString);
+	  $qrJson = json_encode($qrString);
+  }
 ?>
 
 <div id="uq-nalog">
-  <div class="qr">
-    <h2>UPN QR za mobilno banko</h2>
-    <canvas id="uq-qrcode-big"></canvas>
-  </div>
+  <?php if (!$hideBigQr): ?>
+    <div class="qr">
+      <?php if (!$hideTitles): ?>
+        <h2>UPN QR za mobilno banko</h2>
+      <?php endif; ?>
+
+      <?php if ($isQrPhp): ?>
+        <div id="uq-qrcode-big" class="uq-svg">
+          <?php echo $qrSvgMarkup; ?>
+        </div>
+      <?php elseif (!!$qrJson): ?>
+        <canvas id="uq-qrcode-big"></canvas>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
   
   <div class="upn">
-    <h2>UPN Nalog</h2>
+    <?php if (!$hideTitles): ?>
+      <h2>UPN Nalog</h2>
+    <?php endif; ?>
   
     <div id="uq-background">
       <img id="uq-bg-image" src="<?php echo UQ__PLUGIN_URL; ?>public/upn.png" alt="">
@@ -189,11 +246,18 @@
         <?php echo $data['prejemnik']['kraj']; ?>
       </p>
 
-          <!--    QR    -->
-          <canvas id="uq-qrcode"></canvas>
-      
+      <!-- QR -->
+      <?php if ($isQrPhp): ?>
+        <div id="uq-qrcode" class="uq-svg">
+          <?php echo $qrSvgMarkup; ?>
+        </div>
+      <?php elseif (!!$qrJson): ?>
+        <canvas id="uq-qrcode"></canvas>
+      <?php endif; ?>
     </div>
   </div>
-    
-  <div id="uq-data" data-value='<?php echo $qrString; ?>'></div>
+
+  <?php if (!$isQrPhp && !!$qrJson): ?>
+    <div id="uq-data" data-value='<?php echo $qrJson; ?>'></div>
+  <?php endif; ?>
 </div>

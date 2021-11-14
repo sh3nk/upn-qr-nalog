@@ -7,7 +7,7 @@
 Plugin Name: UPN QR Nalog
 Plugin URI: http://senk.eu/
 Description: Izpis UPN QR naloga za placevanje woocommerce storitev.
-Version: 0.3
+Version: 0.4
 WC tested up to: 5.9
 Author: shenk
 Author URI: http://senk.eu/
@@ -63,12 +63,13 @@ class UpnQrNalog {
 	}
 	
 	public function output($orderId) {
+    // $isQrPhp = true;
+    // $hideBigQr = true;
+    // $hideTitles = true;
 		include dirname(__FILE__) . '/templates/upn.php';
   }
   
   public function bacs_fields($account_fields, $order_id) {
-    // $account_fields['sort_code']['value'] = 'SI00 ' . $order_id;
-
     $account_fields['reference'] = array(
       'label' => __('Referenca', 'upn-qr'),
       'value' => esc_attr(get_option('uq_model')) . ' ' . str_replace('%id%', $order_id, esc_attr(get_option('uq_sklic')))

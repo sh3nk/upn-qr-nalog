@@ -1316,3 +1316,241 @@ class Mode
         return $this->numBitsCharCount[\floor(($ver + 7) / 17)];
     }
 }
+
+/**
+ * Formater Base class
+ */
+abstract class OutputFormatter
+{
+    /**
+     * Background color
+     *
+     * @var string
+     */
+    protected $backgroundColor = '#ffffff';
+
+    /**
+     * Foreground color
+     *
+     * @var string
+     */
+    protected $foregroundColor = '#000000';
+
+    /**
+     * Alignment color
+     *
+     * @var string
+     */
+    protected $alignmentColor = '#000000';
+
+    /**
+     * Position color
+     *
+     * @var string
+     */
+    protected $positionColor = '#000000';
+
+    /**
+     * Target output
+     *
+     * @var mixed
+     */
+    protected $target = null;
+
+    /**
+     * Resource data
+     *
+     * @var mixed
+     */
+    protected $data = null;
+
+    /**
+     * QrCode to format
+     *
+     * @var QrCode
+     */
+    protected $qr = null;
+
+    /**
+     * Height
+     *
+     * @var int
+     */
+    protected $height;
+
+    /**
+     * Width
+     *
+     * @var int
+     */
+    protected $width;
+
+    /**
+     * Output border
+     *
+     * @var int
+     */
+    protected $border;
+
+    /**
+     * Constructor
+     *
+     * @param QrCode $qr     QrCode to format
+     * @param int    $height Height of the output
+     * @param int    $width  Width of the output
+     * @param int    $border Output border
+     * @param array  $colors Output colors
+     */
+    public function __construct(QrCode $qr, $height = 512, $width = 512, $border = 20, $colors = [])
+    {
+        $this->qr     = $qr;
+        $this->height = $height;
+        $this->width  = $width;
+        $this->border = $border;
+        foreach ($colors as $color => $value) {
+            $this->$color = $value;
+        }
+        $this->format();
+    }
+
+    /**
+     * Format qrcode to a specific format
+     *
+     * @return $this
+     */
+    abstract public function format();
+
+    /**
+     * Output qrcode to a specific target
+     *
+     * @return mixed
+     */
+    abstract public function output($target);
+
+    /**
+     * Hex to RGB Color converter
+     *
+     * @param string $color Color fo convert
+     *
+     * @return array
+     */
+    protected function colorToRgb($color)
+    {
+        if (\mb_strpos($color, '#') !== 0 && \mb_strlen($color) !== 7) {
+            throw new Exception('Invalid hexadecimal color');
+        }
+        $result                   = [];
+        $color                    = \ltrim($color, '#');
+        list($red, $green, $blue) = \str_split($color, 2);
+
+        $result['red']   = \intval($red, 16);
+        $result['green'] = \intval($green, 16);
+        $result['blue']  = \intval($blue, 16);
+
+        return $result;
+    }
+}
+
+/**
+ * Image class
+ */
+class Image extends OutputFormatter
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function format()
+    {
+        $image = \imagecreatetruecolor($this->width, $this->height);
+        if (!$image) {
+            throw new Exception('Could not create an image');
+        }
+        if ($this->backgroundColor) {
+            $colors     = $this->colorToRgb($this->backgroundColor);
+            $background = \imagecolorallocate($image, $colors['red'], $colors['green'], $colors['blue']);
+        } else {
+            $background = \imagecolorallocatealpha($image, 0, 0, 0, 127);
+        }
+        \imagefill($image, 0, 0, $background);
+        $qr               = $this->qr;
+        $border           = $this->border;
+        $width            = (int) ($this->width - ($border * 2)) / $qr->size;
+        $foregroundColor  = $this->colorToRgb($this->foregroundColor);
+        $positionColor    = $this->colorToRgb($this->positionColor);
+        $color            = \imagecolorallocate(
+            $image,
+            $foregroundColor['red'],
+            $foregroundColor['green'],
+            $foregroundColor['blue']
+        );
+
+        for ($y = -$border; $y < $qr->size + $border; $y++) {
+            for ($x = -$border; $x < $qr->size + $border; $x++) {
+                $w = $border + ($width * $x);
+                $h = $border + ($width * $y);
+                if ($qr->getModule($x, $y)) {
+                    if ($x <= 7 && $y <= 7) {
+                        $color = \imagecolorallocate(
+                            $image,
+                            $positionColor['red'],
+                            $positionColor['green'],
+                            $positionColor['blue']
+                        );
+                    }
+                    \imagefilledrectangle($image, $w, $h, $w + $width, $h + $width, $color);
+                }
+            }
+        }
+        $this->data = $image;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function output($target)
+    {
+        $this->target = $target;
+    }
+}
+
+/**
+ * Png image class
+ */
+class Png extends Image
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function output($target = null)
+    {
+        $this->target = $target;
+        if ($target) {
+            \imagepng($this->data, $target);
+        } else {
+            \imagepng($this->data);
+        }
+        \imagedestroy($this->data);
+    }
+}
+
+/**
+ * Jpeg image class
+ */
+class Jpeg extends Image
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function output($target = null)
+    {
+        $this->target = $target;
+        if ($target) {
+            \imagejpeg($this->data, $target);
+        } else {
+            \imagejpeg($this->data);
+        }
+        \imagedestroy($this->data);
+    }
+}

@@ -2,6 +2,7 @@
   use QrCodeGenPhp\QrCode;
   use QrCodeGenPhp\QrSegment;
   use QrCodeGenPhp\ECC;
+  use QrCodeGenPhp\Png;
 
   /**
    * Get options from plugin custom fields and display UPNQR form.
@@ -11,6 +12,7 @@
    *  	$isQrPhp - Generate QR code with PHP lib instead of JS lib (js works only if page is actually rendered in browser)
    *    $hideBigQr - Do not display big (mobile) qr section
    *    $hideTitles - Hide <h2> titles
+   *    $isPng - output in png instead of svg (must be php generated)
    */
 
   $order = wc_get_order($orderId);
@@ -22,7 +24,8 @@
     return;
   }
 
-  if ($isQrPhp) {
+  if ($isQrPhp || $isPng) {
+    $isQrPhp = true; // force true, cause needed for png
     include_once __DIR__ . '/../lib/qrcodegen.php';
   }
   
@@ -122,6 +125,7 @@
 
   $qrJson = '';
   $qrSvgMarkup = '';
+  $qrPng = null;
 
   if ($isQrPhp) {
     // Generate QR with php
@@ -142,7 +146,19 @@
         false // boost ecc
       );
 
-      $qrSvgMarkup = $finalQr->toSvgString(4);
+      if ($isPng) {
+        // Output as PNG
+        $qrPng = new Png($finalQr); // default 512x512
+
+        ob_start();
+        $qrPng->output();
+        $qrPng = ob_get_clean();
+
+        $qrPng = base64_encode($qrPng);
+      } else {
+        // Output as SVG
+        $qrSvgMarkup = $finalQr->toSvgString(4);
+      }
     }
   } else {
     // Convert to json to use in generate-qr.js
@@ -157,9 +173,13 @@
         <h2>UPN QR za mobilno banko</h2>
       <?php endif; ?>
 
-      <?php if ($isQrPhp): ?>
+      <?php if (!!$qrSvgMarkup): ?>
         <div id="uq-qrcode-big" class="uq-svg">
           <?php echo $qrSvgMarkup; ?>
+        </div>
+      <?php elseif (!!$qrPng): ?>
+        <div id="uq-qrcode-big" class="uq-png">
+          <img src="data:image/png;base64,<?php echo $qrPng; ?>" />
         </div>
       <?php elseif (!!$qrJson): ?>
         <canvas id="uq-qrcode-big"></canvas>
@@ -247,9 +267,13 @@
       </p>
 
       <!-- QR -->
-      <?php if ($isQrPhp): ?>
+      <?php if (!!$qrSvgMarkup): ?>
         <div id="uq-qrcode" class="uq-svg">
           <?php echo $qrSvgMarkup; ?>
+        </div>
+      <?php elseif (!!$qrPng): ?>
+        <div id="uq-qrcode" class="uq-png">
+          <img src="data:image/png;base64,<?php echo $qrPng; ?>" />
         </div>
       <?php elseif (!!$qrJson): ?>
         <canvas id="uq-qrcode"></canvas>

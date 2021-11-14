@@ -66,6 +66,7 @@ class UpnQrNalog {
     // $isQrPhp = true;
     // $hideBigQr = true;
     // $hideTitles = true;
+    // $isPng = true;
 		include dirname(__FILE__) . '/templates/upn.php';
   }
   

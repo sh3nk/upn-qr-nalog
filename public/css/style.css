@@ -7,7 +7,8 @@
   max-width: 100%;
 }
 
-#uq-qrcode-big.uq-svg {
+#uq-qrcode-big.uq-svg,
+#uq-qrcode-big.uq-png {
   display: flex;
   width: 340px;
 }
@@ -41,7 +42,8 @@
   left: 237px;
 }
 
-#uq-qrcode.uq-svg {
+#uq-qrcode.uq-svg,
+#uq-qrcode.uq-png {
   display: flex;
   width: 136px;
   max-width: 100%;

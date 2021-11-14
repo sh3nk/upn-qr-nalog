@@ -19,6 +19,11 @@
   position: relative;
   font-family: "Courier New", Courier, monospace;
   font-weight: bold;
+  color: #000000;
+}
+
+#uq-background img {
+  max-width: 100%;
 }
 
 .uq-data {
@@ -44,7 +49,6 @@
 
 #uq-qrcode.uq-svg,
 #uq-qrcode.uq-png {
-  display: flex;
   width: 136px;
   max-width: 100%;
 }

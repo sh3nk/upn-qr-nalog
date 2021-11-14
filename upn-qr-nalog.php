@@ -7,7 +7,7 @@
 Plugin Name: UPN QR Nalog
 Plugin URI: http://senk.eu/
 Description: Izpis UPN QR naloga za placevanje woocommerce storitev.
-Version: 0.4
+Version: 0.5
 WC tested up to: 5.9
 Author: shenk
 Author URI: http://senk.eu/
@@ -39,19 +39,24 @@ class UpnQrNalog {
 		if (empty($uqHook)) {
 			$uqHook = 'woocommerce_thankyou';
 		}
+    add_action($uqHook, array($this, 'output'), $uqPosition);
 		
 		$uqPosition = get_option('uq_position', 10);
 		if ($uqPosition !== 0 && empty($uqPosition)) {
 			$uqPosition = 10;
 		}
-
-		add_action(
-		  $uqHook,
-		  array($this, 'output'),
-		  $uqPosition
-		);
-
     add_filter('woocommerce_bacs_account_fields', array($this, 'bacs_fields'), 10, 2);
+
+    $uqBackendHook = get_option('uq_backend_hook', '');
+    if (!empty($uqBackendHook)) {
+      $uqBackendHook = explode(',', $uqBackendHook);
+      foreach ($uqBackendHook as $hook) {
+        $hook = trim($hook);
+        if (!empty($hook)) {
+          add_action($hook, array($this, 'backendOutput'), 10);
+        }
+      }
+    }
 	}
 
 	public function scripts() {
@@ -63,12 +68,16 @@ class UpnQrNalog {
 	}
 	
 	public function output($orderId) {
-    // $isQrPhp = true;
-    // $hideBigQr = true;
-    // $hideTitles = true;
-    // $isPng = true;
 		include dirname(__FILE__) . '/templates/upn.php';
   }
+
+  public function backendOutput($orderId) {
+		$isQrPhp = true;
+    $isPng = true;
+		$hideBigQr = true;
+		$hideTitles = true;
+		include dirname(__FILE__) . '/templates/upn.php';
+	}
   
   public function bacs_fields($account_fields, $order_id) {
     $account_fields['reference'] = array(
@@ -207,6 +216,14 @@ class UpnQrNalog {
 			'uqoptions',
 			'uqoptions_section'
 		);
+    register_setting('uqoptions', 'uq_backend_hook');
+		add_settings_field(
+			'uq_backend_hook',
+			'Napredno: Akcijska kljuka (generiranje na backendu)',
+			array($this, 'settingsBackendHook'),
+			'uqoptions',
+			'uqoptions_section'
+		);
 	}
 	
 	public function settingsSectionCb() {}
@@ -268,6 +285,12 @@ class UpnQrNalog {
 		$value = esc_attr(get_option('uq_position'));
 		echo '<input type="number" min="0" class="regular-text" id="uq_position" name="uq_position" value="' . $value . '">';
 		echo '<p class="description">Izberi kje naj se na potrditveni strani pokažeta QR in položnica. Default: 10</p>';
+	}
+
+  public function settingsBackendHook() {
+		$value = esc_attr(get_option('uq_backend_hook'));
+		echo '<input type="text" class="regular-text" id="uq_backend_hook" name="uq_backend_hook" value="' . $value . '">';
+		echo '<p class="description">Izberi hook kjer naj se pokaze samo poloznica, zgenerirana na backendu (eg. email template). Vec vrednosti loci z \',\'.</p>';
 	}
 }
 

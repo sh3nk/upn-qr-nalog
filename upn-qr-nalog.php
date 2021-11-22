@@ -34,18 +34,19 @@ class UpnQrNalog {
 		add_action('admin_init', array($this, 'settings'));
 		add_action('admin_menu', array($this, 'submenu'));
 		add_action('wp_enqueue_scripts', array($this, 'scripts'), 15);
+    add_filter('woocommerce_bacs_account_fields', array($this, 'bacs_fields'), 10, 2);
 
     $uqHook = get_option('uq_hook', 'woocommerce_thankyou');
 		if (empty($uqHook)) {
 			$uqHook = 'woocommerce_thankyou';
 		}
-    add_action($uqHook, array($this, 'output'), $uqPosition);
-		
-		$uqPosition = get_option('uq_position', 10);
+
+    $uqPosition = get_option('uq_position', 10);
 		if ($uqPosition !== 0 && empty($uqPosition)) {
 			$uqPosition = 10;
 		}
-    add_filter('woocommerce_bacs_account_fields', array($this, 'bacs_fields'), 10, 2);
+
+    add_action($uqHook, array($this, 'output'), $uqPosition);
 
     $uqBackendHook = get_option('uq_backend_hook', '');
     if (!empty($uqBackendHook)) {
